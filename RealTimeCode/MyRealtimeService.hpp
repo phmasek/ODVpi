@@ -32,7 +32,7 @@ class MyRealtimeService : public core::base::RealtimeService {
             
             // first digit is runtime in seconds for exection
             RUNTIME     = 5 * MICROSECOND * MICROSECOND, 
-            TIMESLICE   = 10,                   // ms/timeslice
+            TIMESLICE   = 100,                  // ms/timeslice
             OCCUPY      = 80                    // percent of timeslice to execute
         };
 

@@ -71,14 +71,14 @@ void MyRealtimeService::nextTimeSlice() {
         if (measureByTime &&
             ((after.toMicroseconds()-before.toMicroseconds()) >= timeslice*MICROSECOND*((float)occupy/100))) {
             break;
-        }else if (i >= piLimit) {
+        }else if (!measureByTime && i >= piLimit) {
             break;
         }
 
     }
 
     if (verbose && !measureByTime) {
-        cout << "Duration of 1 timeslice calculation: " << (after.toMicroseconds()-before.toMicroseconds()) << endl;
+        cout << "Duration of 1 timeslice calculation: " << (after.toMicroseconds()-before.toMicroseconds()) << "us" << endl;
     } else if (verbose) {
         cout << "Pi calculations within timeslice: " << i-1 << endl;
     }
@@ -113,11 +113,15 @@ int32_t main(int32_t argc, char **argv) {
     // Reset benchmark variables
     // within the RT object.
     rts.piDigits        = 0;
-    rts.piTimes         = 0;
+    rts.piTimes         = 1;
     rts.piDuration      = 0;
     rts.timeslice       = freq;
+
+    // Initiate default values 
+    // for flag variables.
     rts.measureByTime   = true;
     rts.verbose         = false;
+    rts.piLimit         = 1000;
     rts.occupy          = MyRealtimeService::OCCUPY;
     rts.runtime         = MyRealtimeService::RUNTIME;
 
@@ -142,7 +146,8 @@ int32_t main(int32_t argc, char **argv) {
     // execution of timeslices.
     cout << endl;
     cout << "Running at:                            "  << 1000/rts.timeslice << "hz"                        << endl;
-    cout << "Occupation \% per slice:                " << rts.occupy                                   << "%"          << endl;
+    if (rts.measureByTime)
+        cout << "Occupation \% per slice:                " << rts.occupy                                   << "%"          << endl;
     cout << "Duration:                              "  << rts.runtime/1000/1000                        << " second(s)" << endl << endl;
 
 
@@ -153,10 +158,11 @@ int32_t main(int32_t argc, char **argv) {
     core::base::Thread::usleepFor(rts.runtime);
     rts.stop();
 
-
+    
     // Print out results from run
-    cout << endl;
-    cout << "Measured by:                           " << (rts.measureByTime ? "Time" : "Pi calculations with ") << (rts.measureByTime ?  : rts.piLimit) << (rts.measureByTime ? "" : " digits per slice") << endl;
+    const char* measured = (rts.measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
+    cout << endl << endl;;
+    cout << "Measured by:    " << measured << (!rts.measureByTime ? rts.piLimit : rts.occupy) << (!rts.measureByTime ? " digits" : "\% of each timeslice with calculations") << endl;
     cout << "Ran for:                               " << rts.runtime/1000/1000                  << " second(s)"           << endl;
     cout << "Total pi calculations (timeslice(s)):  " << rts.piTimes                            << " calculation(s)"      << endl;
     cout << "Total pi digits calculated:            " << rts.piDigits                           << " pi digits"           << endl;
