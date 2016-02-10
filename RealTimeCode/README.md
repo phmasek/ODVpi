@@ -1,5 +1,5 @@
 # RealTimeCode
-This component is run standalone.
+This component is run standalone.  Code based on [realtimeservice tutorial](https://github.com/se-research/OpenDaVINCI/tree/master/tutorials/realtimeservice).
 
 ## Compiling
 ```bash
