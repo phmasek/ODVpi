@@ -9,7 +9,7 @@ g++ -o realtimeservice MyRealtimeService.o -lopendavinci -lpthread -lrt
 
 ## Executing
 
-The code runs without flags with the default values set and measure mode `occupy`.
+The code runs without flags with the default values set and execution mode `occupy`.
 
 Flags:
 * `-f` or `--freq` - Sets the hz at which the code executes. `(int)` :: Default: 10
