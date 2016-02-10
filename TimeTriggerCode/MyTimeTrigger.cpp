@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+
 #include <iostream>
 
 #include "MyTimeTrigger.hpp"
@@ -42,14 +43,6 @@ void TimeTrigger::setUp() {
     piDuration  = 0;
 
 
-    // Setup the flag variables
-    occupy          = getKeyValueConfiguration().getValue<float>("timetrigger.occupy");
-    verbose         = getKeyValueConfiguration().getValue<bool>("timetrigger.verbose");
-    measureByTime   = getKeyValueConfiguration().getValue<bool>("timetrigger.measure_by_time");
-    piLimit         = getKeyValueConfiguration().getValue<uint32_t>("timetrigger.pi_limit");
-
-    cout << occupy << endl;
-
     // Print out info before starting
     // execution of timeslices.
     cout << endl;
@@ -62,14 +55,14 @@ void TimeTrigger::setUp() {
 
 void TimeTrigger::tearDown() {
     // Print out results from run
+    const char* measured = (measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
     cout << endl;
-    cout << "Measured by:                           " << (measureByTime ? "Time" : "Pi calculations with ") << (measureByTime ?  : piLimit) << (measureByTime ? "" : " digits per slice") << endl;
+    cout << "Measured by:    " << measured << (!measureByTime ? piLimit : occupy) << (!measureByTime ? " digits" : "\% of timeslice") << endl;
     cout << "Ran for:                               " << core::data::TimeStamp().getSeconds()-timer.getSeconds()  << " second(s)"           << endl;
     cout << "Total pi calculations (timeslice(s)):  " << piTimes                            << " calculation(s)"      << endl;
     cout << "Total pi digits calculated:            " << piDigits                           << " pi digits"           << endl;
     cout << "Avg. pi digits per slice:              " << piDigits/piTimes                   << " pi digits/timeslice" << endl;
-    // cout << "Avg. pi digits per ms:                 " << piDigits/piDuration                << " pi digits/ms"        << endl << endl;
-    cout << piDuration << endl;
+    cout << "Avg. pi digits per ms:                 " << piDigits/piDuration                << " pi digits/ms"        << endl << endl;
 }
 
 coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
@@ -111,7 +104,7 @@ coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
             if (measureByTime &&
                 ((after.toMicroseconds()-before.toMicroseconds())*MICROSECOND >= (SECOND/getFrequency())*((float)occupy/100))) {
                 break;
-            }else if (i >= piLimit) {
+            }else if (!measureByTime && i >= piLimit) {
                 break;
             }
 
@@ -120,7 +113,7 @@ coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
         if (verbose && !measureByTime) {
             cout << "Duration of 1 timeslice calculation: " << (after.toMicroseconds()-before.toMicroseconds()) << endl;
         } else if (verbose) {
-            cout << "Pi calculations within timeslice: " << i-1 << endl;
+            cout << "Pi calculations within timeslice: " << i << endl;
         }
 
         // Measure time used for calculating
@@ -134,5 +127,28 @@ coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
 
 int32_t main(int32_t argc, char **argv) {
     TimeTrigger tte(argc, argv);
+
+    // Setup the default value
+    // for the flag variables.
+    tte.occupy          = 80;
+    tte.verbose         = false;
+    tte.measureByTime   = true;
+    tte.piLimit         = 1000;
+
+    for (int args=0;args<argc;args++){
+        if (string(argv[args])=="-p" || string(argv[args])=="--pi") {
+            tte.measureByTime = false;
+            istringstream buffer(string(argv[args+1]));
+            buffer >> tte.piLimit;
+        } else if (string(argv[args])=="-v" || string(argv[args])=="--verbose") {
+            tte.verbose = true;
+        } else if (string(argv[args])=="-o" || string(argv[args])=="--occupy") {
+            istringstream buffer(string(argv[args+1]));
+            buffer >> tte.occupy;
+        }
+    }
+
+
+
     return tte.runModule();
 }

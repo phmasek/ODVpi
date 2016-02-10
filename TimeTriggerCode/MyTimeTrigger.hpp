@@ -18,6 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+
+/*
+ * Execution example:
+ *     Occupy scenario (80%):    
+ *     ./timetrigger --cid=111 --freq=10 --realtime=49 --verbose --occupy 80
+ *     
+ *     Pi limit scenario (1000 digits per timeslice):
+ *     ./timetrigger --cid=111 --freq=10 --realtime=49 --verbose --pi 1000
+ *     
+ */
+
 #include <core/base/module/TimeTriggeredConferenceClientModule.h>
 
 
