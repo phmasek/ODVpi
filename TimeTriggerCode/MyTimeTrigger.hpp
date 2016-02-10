@@ -19,7 +19,30 @@
 
 #include <core/base/module/TimeTriggeredConferenceClientModule.h>
 
-class TimeTriggerExample : public core::base::module::TimeTriggeredConferenceClientModule {
+
+class TimeTrigger : public core::base::module::TimeTriggeredConferenceClientModule {
+    public:
+        enum {
+            NANOSECOND  = 1,
+            MICROSECOND = 1000 * NANOSECOND,    // 1000 nanoseconds are one microsecond.
+            MILLISECOND = 1000 * MICROSECOND,   // 1000 microseconds are one millisecond.
+            SECOND      = 1000 * MILLISECOND,   // 1000 milliseconds are one second.
+            
+            // first digit is runtime in seconds for exection
+            RUNTIME     = 5 * MICROSECOND * MICROSECOND, 
+            TIMESLICE   = 10,                   // ms/timeslice
+            OCCUPY      = 80                    // percent of timeslice to execute
+        };
+
+    // Benchmark Variables
+    public:
+        int piDigits;
+        int piTimes;
+        int piDuration;
+        core::data::TimeStamp timer;
+
+
+    // Functions used
     private:
         /**
          * "Forbidden" copy constructor. Goal: The compiler should warn
@@ -28,7 +51,7 @@ class TimeTriggerExample : public core::base::module::TimeTriggeredConferenceCli
          *
          * @param obj Reference to an object of this class.
          */
-        TimeTriggerExample(const TimeTriggerExample &/*obj*/);
+        TimeTrigger(const TimeTrigger &/*obj*/);
 
         /**
          * "Forbidden" assignment operator. Goal: The compiler should warn
@@ -38,7 +61,7 @@ class TimeTriggerExample : public core::base::module::TimeTriggeredConferenceCli
          * @param obj Reference to an object of this class.
          * @return Reference to this instance.
          */
-        TimeTriggerExample& operator=(const TimeTriggerExample &/*obj*/);
+        TimeTrigger& operator=(const TimeTrigger &/*obj*/);
 
     public:
         /**
@@ -47,9 +70,9 @@ class TimeTriggerExample : public core::base::module::TimeTriggeredConferenceCli
          * @param argc Number of command line arguments.
          * @param argv Command line arguments.
          */
-        TimeTriggerExample(const int32_t &argc, char **argv);
+        TimeTrigger(const int32_t &argc, char **argv);
 
-        virtual ~TimeTriggerExample();
+        virtual ~TimeTrigger();
 
         coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode body();
 
