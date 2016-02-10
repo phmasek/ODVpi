@@ -10,7 +10,7 @@ g++ -o timetrigger MyTimeTrigger.o -lopendavinci -lpthread -lrt
 ## Executing
 **Make sure** that supercomponent is running before executing this component.
 
-The code runs with extended flags set with default values and execution mode `occupy`.
+The code runs with extended flags set to default values and execution mode `occupy`.
 
 Inherited Flags (OpenDaVinci):
 * `--freq=` (required)
