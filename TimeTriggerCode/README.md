@@ -1,5 +1,5 @@
 # TimeTriggerCode
-This component is run as slave for supercomponent.
+This component is run as slave for supercomponent. Code based on [time trigger tutorial](https://github.com/se-research/OpenDaVINCI/tree/master/tutorials/timetrigger).
 
 ## Compiling
 ```bash
