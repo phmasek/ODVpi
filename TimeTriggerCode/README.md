@@ -1,5 +1,13 @@
-# Executing
+# TimeTriggerCode
 This component is run as slave for supercomponent. Make sure that supercomponent is running before executing this.
+
+## Compiling
+```bash
+g++ -I /usr/include/opendavinci -c MyTimeTrigger.cpp -o MyTimeTrigger.o
+g++ -o timetrigger MyTimeTrigger.o -lopendavinci -lpthread -lrt
+```
+
+## Executing
 
 Inherited Flags (OpenDaVinci):
 * `--freq=` (required)
