@@ -40,6 +40,16 @@ class MyRealtimeService : public core::base::RealtimeService {
         int piDigits;
         int piTimes;
         int piDuration;
+        int timeslice;
+
+
+    // Flag Variables
+    public:
+        int piLimit;
+        int occupy;
+        int runtime;
+        bool measureByTime;
+        bool verbose;
 
 
     // Functions used

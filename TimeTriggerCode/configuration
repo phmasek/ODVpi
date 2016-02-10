@@ -1,2 +1,5 @@
 
-timetrigger.occupy = 0.8
+timetrigger.occupy = 80
+timetrigger.verbose = 0
+timetrigger.pi_limit = 1000
+timetrigger.measure_by_time = 1

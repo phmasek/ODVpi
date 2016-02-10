@@ -41,6 +41,14 @@ class TimeTrigger : public core::base::module::TimeTriggeredConferenceClientModu
         int piDuration;
         core::data::TimeStamp timer;
 
+    // Flag Variables
+    public:
+        int piLimit;
+        float occupy;
+        bool measureByTime;
+        bool verbose;
+
+
 
     // Functions used
     private:

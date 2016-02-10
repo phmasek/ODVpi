@@ -14,17 +14,28 @@ TimeTrigger::TimeTrigger(const int32_t &argc, char **argv) :
 TimeTrigger::~TimeTrigger() {}
 
 void TimeTrigger::setUp() {
-    // Print out info before starting
-    // execution of timeslices.
-    cout << endl;
-    cout << "Running at:                            "  << getFrequency()    << "hz" << endl;
-    cout << "Occupation \% per slice:                " << getKeyValueConfiguration().getValue<float>("timetrigger.occupy")*100 << "%" << endl << endl;
 
     // Reset benchmark variables
     // within the RT object.
     piDigits    = 0;
     piTimes     = 0;
     piDuration  = 0;
+
+
+    // Setup the flag variables
+    occupy          = getKeyValueConfiguration().getValue<float>("timetrigger.occupy");
+    verbose         = getKeyValueConfiguration().getValue<bool>("timetrigger.verbose");
+    measureByTime   = getKeyValueConfiguration().getValue<bool>("timetrigger.measure_by_time");
+    piLimit         = getKeyValueConfiguration().getValue<uint32_t>("timetrigger.pi_limit");
+
+    cout << occupy << endl;
+
+    // Print out info before starting
+    // execution of timeslices.
+    cout << endl;
+    cout << "Running at:                            "  << getFrequency()    << "hz" << endl;
+    cout << "Occupation \% per slice:                " << occupy*100 << "%" << endl << endl;
+
     timer = core::data::TimeStamp();
 
 }
@@ -32,11 +43,13 @@ void TimeTrigger::setUp() {
 void TimeTrigger::tearDown() {
     // Print out results from run
     cout << endl;
+    cout << "Measured by:                           " << (measureByTime ? "Time" : "Pi calculations with ") << (measureByTime ?  : piLimit) << (measureByTime ? "" : " digits per slice") << endl;
     cout << "Ran for:                               " << core::data::TimeStamp().getSeconds()-timer.getSeconds()  << " second(s)"           << endl;
-    cout << "Total pi calculations (timeslice(s)):  " << piTimes                        << " calculation(s)"      << endl;
-    cout << "Total pi digits calculated:            " << piDigits                       << " pi digits"           << endl;
-    cout << "Avg. pi digits per slice:              " << piDigits/piTimes               << " pi digits/timeslice" << endl;
-    cout << "Avg. pi digits per ms:                 " << piDigits/piDuration            << " pi digits/ms"        << endl << endl;
+    cout << "Total pi calculations (timeslice(s)):  " << piTimes                            << " calculation(s)"      << endl;
+    cout << "Total pi digits calculated:            " << piDigits                           << " pi digits"           << endl;
+    cout << "Avg. pi digits per slice:              " << piDigits/piTimes                   << " pi digits/timeslice" << endl;
+    // cout << "Avg. pi digits per ms:                 " << piDigits/piDuration                << " pi digits/ms"        << endl << endl;
+    cout << piDuration << endl;
 }
 
 coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
@@ -75,18 +88,26 @@ coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
             // Break if run more than specified
             // occupation % of timeslice.
             after = core::data::TimeStamp();
-            if ((after.toMicroseconds()-before.toMicroseconds())*MICROSECOND >= (SECOND/getFrequency())*.9) {
+            if (measureByTime &&
+                ((after.toMicroseconds()-before.toMicroseconds())*MICROSECOND >= (SECOND/getFrequency())*((float)occupy/100))) {
+                break;
+            }else if (i >= piLimit) {
                 break;
             }
 
         }
 
+        if (verbose && !measureByTime) {
+            cout << "Duration of 1 timeslice calculation: " << (after.toMicroseconds()-before.toMicroseconds()) << endl;
+        } else if (verbose) {
+            cout << "Pi calculations within timeslice: " << i-1 << endl;
+        }
+
         // Measure time used for calculating
         // pi, and how many timeslices were
         // run.
-        piDuration += (after.toMicroseconds()-before.toMicroseconds())/MICROSECOND;
+        piDuration += (after.toMicroseconds()-before.toMicroseconds());
         piTimes++;
-        cout << piTimes << " " << (after.toMicroseconds()-before.toMicroseconds()) << endl;
     }
     return coredata::dmcp::ModuleExitCodeMessage::OKAY;
 }
