@@ -22,10 +22,10 @@ Flags:
 
 Runs occupy scenario with 80% of timeslice occupied with pi calculations and verbose enabled:
 ```bash
-./timetrigger --freq 10 --verbose --occupy 80
+./realtimeservice --freq 10 --verbose --occupy 80
 ```
 
 Pi limited scenario with 1000 decimals per timeslice and verbose disabled:
 ```bash
-./timetrigger --freq 10 --pi 1000
+./realtimeservice --freq 10 --pi 1000
 ```
