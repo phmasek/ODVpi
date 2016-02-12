@@ -48,9 +48,9 @@ class TimeTrigger : public core::base::module::TimeTriggeredConferenceClientModu
 
     // Benchmark Variables
     public:
-        int piDigits;
+        float piDigits;
+        float piDuration;
         int piTimes;
-        int piDuration;
         core::data::TimeStamp timer;
 
     // Flag Variables

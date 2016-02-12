@@ -48,9 +48,9 @@ class RealtimeService : public core::base::RealtimeService {
 
     // Benchmark Variables
     public:
-        int piDigits;
+        float piDigits;
         int piTimes;
-        int piDuration;
+        float piDuration;
         int timeslice;
 
 

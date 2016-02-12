@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <core/base/Thread.h>
 #include "core/data/TimeStamp.h"
 
@@ -58,15 +59,10 @@ void RealtimeService::nextTimeSlice() {
         i++;
         j+=2;
 
-        // Calculate the amount of
-        // pi digits in one timeslice.
-        piDigits++;
-
         
         // How long the [while] has ran.
         // Break if run more than specified
         // occupation % of timeslice.
-        
         after = core::data::TimeStamp();
         if (measureByTime &&
             ((after.toMicroseconds()-before.toMicroseconds()) >= timeslice*((float)occupy/100))) {
@@ -76,21 +72,26 @@ void RealtimeService::nextTimeSlice() {
         }
 
     }
-
-    if (verbose==MODE1 && !measureByTime) {
-        cout << "Duration of 1 timeslice calculation: " << (after.toMicroseconds()-before.toMicroseconds()) << "us" << endl;
-    } else if (verbose==MODE1) {
-        cout << "Pi calculations finished within timeslice: " << i << endl;
-    } else if (verbose==MODE2) {
-        cout << "Duration of timeslice: " << (after.toMicroseconds()-before.toMicroseconds()) << "us" << endl;
-    }
-
-    // Measure time used for calculating
-    // pi, and how many timeslices were
-    // run.
-    piDuration += (after.toMicroseconds()-before.toMicroseconds())/MICROSECOND;
+    // Add to the timeslice counter
     piTimes++;
 
+
+    // Calculate the avg. amount of
+    // pi digits in one timeslice.
+    piDigits=piDigits+(((i-1)-piDigits)/piTimes);
+
+
+    // Verbose code
+    if (verbose==MODE2||!measureByTime) {
+        cout << fixed << setprecision(2) << "Calculated for: " << (after.toMicroseconds()-before.toMicroseconds()) << "us Avg: " << piDuration << "us" << endl;
+    } else if (verbose==MODE1) {
+        cout << fixed << setprecision(2) << "Pi decimals finished: " << i << " Avg. pi decimals: " << piDigits << endl;
+    }
+
+    // Measure avg time used for calculating
+    // pi, and how many timeslices were
+    // run.
+    piDuration = piDuration+(((after.toMicroseconds()-before.toMicroseconds())-piDuration)/piTimes);
 }
 
 
@@ -116,7 +117,7 @@ int32_t main(int32_t argc, char **argv) {
     // within the RT object.
     rts.piDigits        = 0;
     rts.piTimes         = 1;
-    rts.piDuration      = 0;
+    rts.piDuration      = 0.00;
     rts.timeslice       = freq;
 
     // Initiate default values 
@@ -167,15 +168,13 @@ int32_t main(int32_t argc, char **argv) {
     core::base::Thread::usleepFor(rts.runtime);
     rts.stop();
 
-    
     // Print out results from run
     const char* measured = (rts.measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
     cout << endl << endl;;
     cout << "Measured by:    " << measured << (!rts.measureByTime ? rts.piLimit : rts.occupy) << (!rts.measureByTime ? " digits" : "\% of each timeslice with calculations") << endl;
     cout << "Ran for:                               " << rts.runtime/1000/1000                  << " second(s)"           << endl;
     cout << "Total pi calculations (timeslice(s)):  " << rts.piTimes                            << " calculation(s)"      << endl;
-    cout << "Total pi decimals calculated:          " << rts.piDigits                           << " pi digits"           << endl;
-    cout << "Avg. pi digits per slice:              " << rts.piDigits/rts.piTimes               << " pi digits/timeslice" << endl;
-    cout << "Avg. pi digits per ms:                 " << rts.piDigits/rts.piDuration            << " pi digits/ms"        << endl << endl;
+    cout << fixed << setprecision(4) << "Avg. pi digits per slice:              " << rts.piDigits                           << " pi digits/timeslice" << endl;
+    cout << fixed << setprecision(4) << "Avg. us spent calculating per slice:   " << rts.piDuration                         << " us/timeslice"        << endl << endl;
 
 }

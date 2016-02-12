@@ -20,6 +20,7 @@
 
 
 #include <iostream>
+#include <iomanip>
 
 #include "MyTimeTrigger.hpp"
 
@@ -38,9 +39,9 @@ void TimeTrigger::setUp() {
 
     // Reset benchmark variables
     // within the RT object.
-    piDigits    = 0;
+    piDigits    = 0.00;
     piTimes     = 0;
-    piDuration  = 0;
+    piDuration  = 0.00;
 
 
     // Print out info before starting
@@ -59,10 +60,9 @@ void TimeTrigger::tearDown() {
     cout << endl << endl;;
     cout << "Measured by:    " << measured << (!measureByTime ? piLimit : occupy) << (!measureByTime ? " digits" : "\% of each timeslice with calculations") << endl;
     cout << "Ran for:                               " << core::data::TimeStamp().getSeconds()-timer.getSeconds()  << " second(s)"           << endl;
-    cout << "Total pi calculations (timeslice(s)):  " << piTimes                            << " calculation(s)"      << endl;
-    cout << "Total pi decimals calculated:          " << piDigits                           << " pi digits"           << endl;
-    cout << "Avg. pi digits per slice:              " << piDigits/piTimes                   << " pi digits/timeslice" << endl;
-    cout << "Avg. pi digits per ms:                 " << piDigits/piDuration                << " pi digits/ms"        << endl << endl;
+    cout << "Total pi timeslice(s):                 " << piTimes                            << " calculation(s)"      << endl;
+    cout << fixed << setprecision(4) << "Avg. pi digits per slice:              " << piDigits                           << " pi digits/timeslice" << endl;
+    cout << fixed << setprecision(4) << "Avg. us spent calculating per slice:   " << piDuration                         << " us/timeslice"        << endl << endl;
 }
 
 coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
@@ -92,9 +92,7 @@ coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
             i++;
             j+=2;
 
-            // Calculate the amount of
-            // pi digits in one timeslice.
-            piDigits++;
+            
 
             
             // How long the [while] has ran.
@@ -109,20 +107,26 @@ coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
             }
 
         }
+        // Add to the timeslice counter
+        piTimes++;
 
-        if (verbose==MODE1 && !measureByTime) {
-            cout << "Duration of 1 timeslice calculation: " << (after.toMicroseconds()-before.toMicroseconds()) << "us" << endl;
+
+        // Calculate the avg. amount of
+        // pi digits in one timeslice.
+        piDigits=piDigits+(((i-1)-piDigits)/piTimes);
+
+
+        // Verbose code
+        if (verbose==MODE2||!measureByTime) {
+            cout << fixed << setprecision(2) << "Calculated for: " << (after.toMicroseconds()-before.toMicroseconds()) << "us Avg: " << piDuration << "us" << endl;
         } else if (verbose==MODE1) {
-            cout << "Pi calculations finished within timeslice: " << i << endl;
-        } else if (verbose==MODE2) {
-            cout << "Duration of timeslice: " << (after.toMicroseconds()-before.toMicroseconds()) << "us" << endl;
+            cout << fixed << setprecision(2) << "Pi decimals finished: " << i << " Avg. pi decimals: " << piDigits << endl;
         }
 
-        // Measure time used for calculating
+        // Measure avg time used for calculating
         // pi, and how many timeslices were
         // run.
-        piDuration += (after.toMicroseconds()-before.toMicroseconds());
-        piTimes++;
+        piDuration = piDuration+(((after.toMicroseconds()-before.toMicroseconds())-piDuration)/piTimes);
     }
     return coredata::dmcp::ModuleExitCodeMessage::OKAY;
 }
