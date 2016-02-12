@@ -18,11 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+/*
+ * Execution example:
+ *     Occupy scenario (80%):    
+ *     ./timetrigger --freq 10 --verbose --occupy 80
+ *     
+ *     Pi limit scenario (1000 digits per timeslice):
+ *     ./timetrigger --freq 10 --verbose --pi 1000
+ *     
+ */
+
 #include <core/base/RealtimeService.h>
 
 
 // Realtime concurrency is provided by the class core::base::RealtimeService.
-class MyRealtimeService : public core::base::RealtimeService {
+class RealtimeService : public core::base::RealtimeService {
     public:
         enum {
             NANOSECOND  = 1,
@@ -50,12 +60,18 @@ class MyRealtimeService : public core::base::RealtimeService {
         int occupy;
         int runtime;
         bool measureByTime;
-        bool verbose;
+        enum VERBOSE_MODE {
+            QUIET,
+            MODE1,
+            MODE2
+        };
+
+        VERBOSE_MODE verbose;
 
 
     // Functions used
     public:
-        MyRealtimeService(const uint32_t &periodInMicroseconds);
+        RealtimeService(const uint32_t &periodInMicroseconds);
 
         // Your class needs to implement the method void nextTimeSlice().
         virtual void nextTimeSlice();

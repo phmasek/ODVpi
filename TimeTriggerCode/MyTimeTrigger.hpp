@@ -58,7 +58,14 @@ class TimeTrigger : public core::base::module::TimeTriggeredConferenceClientModu
         int piLimit;
         float occupy;
         bool measureByTime;
-        bool verbose;
+        enum VERBOSE_MODE {
+            QUIET,
+            MODE1,
+            MODE2
+        };
+
+        VERBOSE_MODE verbose;
+
 
 
 

@@ -29,11 +29,11 @@
 
 using namespace std;
 
-MyRealtimeService::MyRealtimeService(const uint32_t &periodInMilliseconds) :
+RealtimeService::RealtimeService(const uint32_t &periodInMilliseconds) :
     core::base::RealtimeService((PERIOD) (periodInMilliseconds*MICROSECOND)) {}
 
 
-void MyRealtimeService::nextTimeSlice() {
+void RealtimeService::nextTimeSlice() {
 
     // Pi algorithm variable are
     // reset after each timeslice.
@@ -77,10 +77,12 @@ void MyRealtimeService::nextTimeSlice() {
 
     }
 
-    if (verbose && !measureByTime) {
+    if (verbose==MODE1 && !measureByTime) {
         cout << "Duration of 1 timeslice calculation: " << (after.toMicroseconds()-before.toMicroseconds()) << "us" << endl;
-    } else if (verbose) {
-        cout << "Pi calculations within timeslice: " << i-1 << endl;
+    } else if (verbose==MODE1) {
+        cout << "Pi calculations finished within timeslice: " << i << endl;
+    } else if (verbose==MODE2) {
+        cout << "Duration of timeslice: " << (after.toMicroseconds()-before.toMicroseconds()) << "us" << endl;
     }
 
     // Measure time used for calculating
@@ -95,7 +97,7 @@ void MyRealtimeService::nextTimeSlice() {
 int32_t main(int32_t argc, char **argv) {
     
 
-    int freq = MyRealtimeService::TIMESLICE;
+    int freq = RealtimeService::TIMESLICE;
     for (int args=0;args<argc;args++){
         if (string(argv[args])=="-f" || string(argv[args])=="--freq") {
             istringstream buffer(string(argv[args+1]));
@@ -106,7 +108,7 @@ int32_t main(int32_t argc, char **argv) {
 
     // Initiate the RT object with the
     // time of one timeslice [TIMESLICE].
-    MyRealtimeService rts((MyRealtimeService::PERIOD) freq);
+    RealtimeService rts((RealtimeService::PERIOD) freq);
 
     int timer = 1;
 
@@ -120,10 +122,10 @@ int32_t main(int32_t argc, char **argv) {
     // Initiate default values 
     // for flag variables.
     rts.measureByTime   = true;
-    rts.verbose         = false;
+    rts.verbose         = RealtimeService::QUIET;
     rts.piLimit         = 1000;
-    rts.occupy          = MyRealtimeService::OCCUPY;
-    rts.runtime         = MyRealtimeService::RUNTIME;
+    rts.occupy          = RealtimeService::OCCUPY;
+    rts.runtime         = RealtimeService::RUNTIME;
 
     for (int args=0;args<argc;args++){
         if (string(argv[args])=="-p" || string(argv[args])=="--pi") {
@@ -131,7 +133,14 @@ int32_t main(int32_t argc, char **argv) {
             istringstream buffer(string(argv[args+1]));
             buffer >> rts.piLimit;
         } else if (string(argv[args])=="-v" || string(argv[args])=="--verbose") {
-            rts.verbose = true;
+            int tmpV;
+            istringstream buffer(string(argv[args+1]));
+            buffer >> tmpV;
+            switch(tmpV) {
+                case 1 : rts.verbose = RealtimeService::MODE1; break;
+                case 2 : rts.verbose = RealtimeService::MODE2; break;
+                default:  rts.verbose = RealtimeService::MODE1; break;
+            }
         } else if (string(argv[args])=="-o" || string(argv[args])=="--occupy") {
             istringstream buffer(string(argv[args+1]));
             buffer >> rts.occupy;
@@ -165,7 +174,7 @@ int32_t main(int32_t argc, char **argv) {
     cout << "Measured by:    " << measured << (!rts.measureByTime ? rts.piLimit : rts.occupy) << (!rts.measureByTime ? " digits" : "\% of each timeslice with calculations") << endl;
     cout << "Ran for:                               " << rts.runtime/1000/1000                  << " second(s)"           << endl;
     cout << "Total pi calculations (timeslice(s)):  " << rts.piTimes                            << " calculation(s)"      << endl;
-    cout << "Total pi digits calculated:            " << rts.piDigits                           << " pi digits"           << endl;
+    cout << "Total pi decimals calculated:          " << rts.piDigits                           << " pi digits"           << endl;
     cout << "Avg. pi digits per slice:              " << rts.piDigits/rts.piTimes               << " pi digits/timeslice" << endl;
     cout << "Avg. pi digits per ms:                 " << rts.piDigits/rts.piDuration            << " pi digits/ms"        << endl << endl;
 

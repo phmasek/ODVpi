@@ -56,11 +56,11 @@ void TimeTrigger::setUp() {
 void TimeTrigger::tearDown() {
     // Print out results from run
     const char* measured = (measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
-    cout << endl;
-    cout << "Measured by:    " << measured << (!measureByTime ? piLimit : occupy) << (!measureByTime ? " digits" : "\% of timeslice") << endl;
+    cout << endl << endl;;
+    cout << "Measured by:    " << measured << (!measureByTime ? piLimit : occupy) << (!measureByTime ? " digits" : "\% of each timeslice with calculations") << endl;
     cout << "Ran for:                               " << core::data::TimeStamp().getSeconds()-timer.getSeconds()  << " second(s)"           << endl;
     cout << "Total pi calculations (timeslice(s)):  " << piTimes                            << " calculation(s)"      << endl;
-    cout << "Total pi digits calculated:            " << piDigits                           << " pi digits"           << endl;
+    cout << "Total pi decimals calculated:          " << piDigits                           << " pi digits"           << endl;
     cout << "Avg. pi digits per slice:              " << piDigits/piTimes                   << " pi digits/timeslice" << endl;
     cout << "Avg. pi digits per ms:                 " << piDigits/piDuration                << " pi digits/ms"        << endl << endl;
 }
@@ -110,10 +110,12 @@ coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
 
         }
 
-        if (verbose && !measureByTime) {
-            cout << "Duration of 1 timeslice calculation: " << (after.toMicroseconds()-before.toMicroseconds()) << endl;
-        } else if (verbose) {
-            cout << "Pi calculations within timeslice: " << i << endl;
+        if (verbose==MODE1 && !measureByTime) {
+            cout << "Duration of 1 timeslice calculation: " << (after.toMicroseconds()-before.toMicroseconds()) << "us" << endl;
+        } else if (verbose==MODE1) {
+            cout << "Pi calculations finished within timeslice: " << i << endl;
+        } else if (verbose==MODE2) {
+            cout << "Duration of timeslice: " << (after.toMicroseconds()-before.toMicroseconds()) << "us" << endl;
         }
 
         // Measure time used for calculating
@@ -131,7 +133,7 @@ int32_t main(int32_t argc, char **argv) {
     // Setup the default value
     // for the flag variables.
     tte.occupy          = 80;
-    tte.verbose         = false;
+    tte.verbose         = TimeTrigger::QUIET;
     tte.measureByTime   = true;
     tte.piLimit         = 1000;
 
@@ -141,7 +143,14 @@ int32_t main(int32_t argc, char **argv) {
             istringstream buffer(string(argv[args+1]));
             buffer >> tte.piLimit;
         } else if (string(argv[args])=="-v" || string(argv[args])=="--verbose") {
-            tte.verbose = true;
+            int tmpV;
+            istringstream buffer(string(argv[args+1]));
+            buffer >> tmpV;
+            switch(tmpV) {
+                case 1 : tte.verbose = TimeTrigger::MODE1; break;
+                case 2 : tte.verbose = TimeTrigger::MODE2; break;
+                default:  tte.verbose = TimeTrigger::MODE1; break;
+            }
         } else if (string(argv[args])=="-o" || string(argv[args])=="--occupy") {
             istringstream buffer(string(argv[args+1]));
             buffer >> tte.occupy;
