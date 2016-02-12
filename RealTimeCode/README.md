@@ -14,9 +14,11 @@ The code runs without flags with the default values set and execution mode `occu
 Flags:
 * `-f` or `--freq` - Sets the hz at which the code executes. `(int)` :: Default: 10
 * `-d` or `--duration` – Sets the amount of seconds the code will run. `(int)` :: Default: 5
-* `-o` or `--occupy` – Used to set the percentage of timeslice to occupy with pi calculations. `(int)` :: Default: 80
+* `-oc` or `--occupy` – Used to set the percentage of timeslice to occupy with pi calculations. `(int)` :: Default: 80
 * `-p` or `--pi` – Used to set the limited amount of pi decimals to calculate per timeslice. `(int)`
-* `-v` or `--verbose` – Extended verbose. `(none)`
+* `-v` or `--verbose` – Extended verbose. `(int)` `1` or `2`
+ * Verbose mode 1: Default. (Showing pi calculations within timeslice for *occupy* mode)
+ * Verbose mode 2: Time. (Showing duration of timeslice for *both* modes)
 
 ### Examples
 
