@@ -155,12 +155,13 @@ int32_t main(int32_t argc, char **argv) {
 
     // Print out info before starting
     // execution of timeslices.
-    cout << endl;
-    cout << "Running at:                            "  << 1000000/rts.timeslice << "hz"                        << endl;
-    if (rts.measureByTime)
-        cout << "Occupation \% per slice:                " << rts.occupy                                   << "%"          << endl;
-    cout << "Duration:                              "  << rts.runtime/1000/1000                        << " second(s)" << endl << endl;
-
+    if (rts.verbose!=RealtimeService::MODE3) {
+        cout << endl;
+        cout << "Running at:                            "  << 1000000/rts.timeslice << "hz"                        << endl;
+        if (rts.measureByTime)
+            cout << "Occupation \% per slice:                " << rts.occupy                                   << "%"          << endl;
+        cout << "Duration:                              "  << rts.runtime/1000/1000                        << " second(s)" << endl << endl;
+    }
 
     // Start the RT object and sleep
     // for specified [RUNTIME] time 
@@ -172,8 +173,7 @@ int32_t main(int32_t argc, char **argv) {
 
     // Print out results from run
     if (rts.verbose==RealtimeService::MODE3) {
-        cout << 1000000/freq << "hz;" << rts.occupy << "%" << endl;
-        cout << rts.piDigits << "digits/slice;" << rts.piDuration << "us/slice" << endl;
+        cout << rts.piDigits << ";" << rts.piDuration << endl;
     } else {
         const char* measured = (rts.measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
         cout << endl << endl;;
