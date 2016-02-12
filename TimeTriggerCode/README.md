@@ -19,9 +19,11 @@ Inherited Flags (OpenDaVinci):
 * `--verbose=` – Verbose provided by OpenDaVinci
 
 Extended Flags:
-* `-o` or `--occupy` – Used to set the percentage of timeslice to occupy with pi calculations. `(int)` :: Default: 80
+* `-oc` or `--occupy` – Used to set the percentage of timeslice to occupy with pi calculations. `(int)` :: Default: 80
 * `-p` or `--pi` – Used to set the limited amount of pi decimals to calculate per timeslice. `(int)`
-* `-v` or `--verbose` – Extended verbose. `(none)`
+* `-v` or `--verbose` – Extended verbose. `(int)` `1` or `2`
+ * Verbose mode 1: Default. (Showing pi calculations within timeslice for *occupy* mode)
+ * Verbose mode 2: Time. (Showing duration of timeslice for *both* modes)
 
 ### Examples
 
