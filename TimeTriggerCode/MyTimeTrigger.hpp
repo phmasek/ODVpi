@@ -61,7 +61,8 @@ class TimeTrigger : public core::base::module::TimeTriggeredConferenceClientModu
         enum VERBOSE_MODE {
             QUIET,
             MODE1,
-            MODE2
+            MODE2,
+            MODE3
         };
 
         VERBOSE_MODE verbose;

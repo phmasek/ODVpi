@@ -56,13 +56,18 @@ void TimeTrigger::setUp() {
 
 void TimeTrigger::tearDown() {
     // Print out results from run
-    const char* measured = (measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
-    cout << endl << endl;;
-    cout << "Measured by:    " << measured << (!measureByTime ? piLimit : occupy) << (!measureByTime ? " digits" : "\% of each timeslice with calculations") << endl;
-    cout << "Ran for:                               " << core::data::TimeStamp().getSeconds()-timer.getSeconds()  << " second(s)"           << endl;
-    cout << "Total pi timeslice(s):                 " << piTimes                            << " calculation(s)"      << endl;
-    cout << fixed << setprecision(4) << "Avg. pi digits per slice:              " << piDigits                           << " pi digits/timeslice" << endl;
-    cout << fixed << setprecision(4) << "Avg. us spent calculating per slice:   " << piDuration                         << " us/timeslice"        << endl << endl;
+    if (verbose==MODE3) {
+        cout << getFrequency() << "hz;" << occupy << "%" << endl;
+        cout << piDigits << "digits/slice;" << piDuration << "us/slice" << endl;
+    } else {
+        const char* measured = (measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
+        cout << endl << endl;;
+        cout << "Measured by:    " << measured << (!measureByTime ? piLimit : occupy) << (!measureByTime ? " digits" : "\% of each timeslice with calculations") << endl;
+        cout << "Ran for:                               " << core::data::TimeStamp().getSeconds()-timer.getSeconds()  << " second(s)"           << endl;
+        cout << "Total pi timeslice(s):                 " << piTimes                            << " calculation(s)"      << endl;
+        cout << fixed << setprecision(4) << "Avg. pi digits per slice:              " << piDigits                           << " pi digits/timeslice" << endl;
+        cout << fixed << setprecision(4) << "Avg. us spent calculating per slice:   " << piDuration                         << " us/timeslice"        << endl << endl;
+    }
 }
 
 coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
@@ -117,7 +122,7 @@ coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
 
 
         // Verbose code
-        if (verbose==MODE2||!measureByTime) {
+        if (verbose==MODE2||(!measureByTime&&verbose!=QUIET)) {
             cout << fixed << setprecision(2) << "Calculated for: " << (after.toMicroseconds()-before.toMicroseconds()) << "us Avg: " << piDuration << "us" << endl;
         } else if (verbose==MODE1) {
             cout << fixed << setprecision(2) << "Pi decimals finished: " << i << " Avg. pi decimals: " << piDigits << endl;
@@ -153,6 +158,7 @@ int32_t main(int32_t argc, char **argv) {
             switch(tmpV) {
                 case 1 : tte.verbose = TimeTrigger::MODE1; break;
                 case 2 : tte.verbose = TimeTrigger::MODE2; break;
+                case 3 : tte.verbose = TimeTrigger::MODE3; break;
                 default:  tte.verbose = TimeTrigger::MODE1; break;
             }
         } else if (string(argv[args])=="-o" || string(argv[args])=="--occupy") {

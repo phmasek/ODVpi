@@ -82,7 +82,7 @@ void RealtimeService::nextTimeSlice() {
 
 
     // Verbose code
-    if (verbose==MODE2||!measureByTime) {
+    if (verbose==MODE2||(!measureByTime&&verbose!=QUIET)) {
         cout << fixed << setprecision(2) << "Calculated for: " << (after.toMicroseconds()-before.toMicroseconds()) << "us Avg: " << piDuration << "us" << endl;
     } else if (verbose==MODE1) {
         cout << fixed << setprecision(2) << "Pi decimals finished: " << i << " Avg. pi decimals: " << piDigits << endl;
@@ -140,6 +140,7 @@ int32_t main(int32_t argc, char **argv) {
             switch(tmpV) {
                 case 1 : rts.verbose = RealtimeService::MODE1; break;
                 case 2 : rts.verbose = RealtimeService::MODE2; break;
+                case 3 : rts.verbose = RealtimeService::MODE3; break;
                 default:  rts.verbose = RealtimeService::MODE1; break;
             }
         } else if (string(argv[args])=="-o" || string(argv[args])=="--occupy") {
@@ -168,13 +169,19 @@ int32_t main(int32_t argc, char **argv) {
     core::base::Thread::usleepFor(rts.runtime);
     rts.stop();
 
+
     // Print out results from run
-    const char* measured = (rts.measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
-    cout << endl << endl;;
-    cout << "Measured by:    " << measured << (!rts.measureByTime ? rts.piLimit : rts.occupy) << (!rts.measureByTime ? " digits" : "\% of each timeslice with calculations") << endl;
-    cout << "Ran for:                               " << rts.runtime/1000/1000                  << " second(s)"           << endl;
-    cout << "Total pi calculations (timeslice(s)):  " << rts.piTimes                            << " calculation(s)"      << endl;
-    cout << fixed << setprecision(4) << "Avg. pi digits per slice:              " << rts.piDigits                           << " pi digits/timeslice" << endl;
-    cout << fixed << setprecision(4) << "Avg. us spent calculating per slice:   " << rts.piDuration                         << " us/timeslice"        << endl << endl;
+    if (rts.verbose==RealtimeService::MODE3) {
+        cout << 1000000/freq << "hz;" << rts.occupy << "%" << endl;
+        cout << rts.piDigits << "digits/slice;" << rts.piDuration << "us/slice" << endl;
+    } else {
+        const char* measured = (rts.measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
+        cout << endl << endl;;
+        cout << "Measured by:    " << measured << (!rts.measureByTime ? rts.piLimit : rts.occupy) << (!rts.measureByTime ? " digits" : "\% of each timeslice with calculations") << endl;
+        cout << "Ran for:                               " << rts.runtime/1000/1000                  << " second(s)"           << endl;
+        cout << "Total pi calculations (timeslice(s)):  " << rts.piTimes                            << " calculation(s)"      << endl;
+        cout << fixed << setprecision(4) << "Avg. pi digits per slice:              " << rts.piDigits                           << " pi digits/timeslice" << endl;
+        cout << fixed << setprecision(4) << "Avg. us spent calculating per slice:   " << rts.piDuration                         << " us/timeslice"        << endl << endl;
+    }
 
 }

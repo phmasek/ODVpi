@@ -63,7 +63,8 @@ class RealtimeService : public core::base::RealtimeService {
         enum VERBOSE_MODE {
             QUIET,
             MODE1,
-            MODE2
+            MODE2,
+            MODE3
         };
 
         VERBOSE_MODE verbose;
