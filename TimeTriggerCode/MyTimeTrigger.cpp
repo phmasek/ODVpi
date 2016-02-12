@@ -47,7 +47,7 @@ void TimeTrigger::setUp() {
     // execution of timeslices.
     cout << endl;
     cout << "Running at:                            "  << getFrequency()    << "hz" << endl;
-    cout << "Occupation \% per slice:                " << occupy*100 << "%" << endl << endl;
+    cout << "Occupation \% per slice:                " << occupy << "%" << endl << endl;
 
     timer = core::data::TimeStamp();
 
