@@ -102,7 +102,7 @@ coredata::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
             // occupation % of timeslice.
             after = core::data::TimeStamp();
             if (measureByTime &&
-                ((after.toMicroseconds()-before.toMicroseconds())*MICROSECOND >= (SECOND/getFrequency())*((float)occupy/100))) {
+                ((after.toMicroseconds()-before.toMicroseconds()) >= (1000000/getFrequency())*((float)occupy/100))) {
                 break;
             }else if (!measureByTime && i >= piLimit) {
                 break;
