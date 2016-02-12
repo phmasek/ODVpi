@@ -29,8 +29,8 @@
 
 using namespace std;
 
-RealtimeService::RealtimeService(const uint32_t &periodInMilliseconds) :
-    core::base::RealtimeService((PERIOD) (periodInMilliseconds*MICROSECOND)) {}
+RealtimeService::RealtimeService(const uint32_t &periodInMicroseconds) :
+    core::base::RealtimeService((PERIOD) (periodInMicroseconds)) {}
 
 
 void RealtimeService::nextTimeSlice() {
@@ -69,7 +69,7 @@ void RealtimeService::nextTimeSlice() {
         
         after = core::data::TimeStamp();
         if (measureByTime &&
-            ((after.toMicroseconds()-before.toMicroseconds()) >= timeslice*MICROSECOND*((float)occupy/100))) {
+            ((after.toMicroseconds()-before.toMicroseconds()) >= timeslice*((float)occupy/100))) {
             break;
         }else if (!measureByTime && i >= piLimit) {
             break;
@@ -97,12 +97,12 @@ void RealtimeService::nextTimeSlice() {
 int32_t main(int32_t argc, char **argv) {
     
 
-    int freq = RealtimeService::TIMESLICE;
+    float freq = RealtimeService::TIMESLICE;
     for (int args=0;args<argc;args++){
         if (string(argv[args])=="-f" || string(argv[args])=="--freq") {
             istringstream buffer(string(argv[args+1]));
             buffer >> freq;
-            freq = 1000/freq;
+            freq = 1000000/freq;
         }
     }
 
@@ -154,7 +154,7 @@ int32_t main(int32_t argc, char **argv) {
     // Print out info before starting
     // execution of timeslices.
     cout << endl;
-    cout << "Running at:                            "  << 1000/rts.timeslice << "hz"                        << endl;
+    cout << "Running at:                            "  << 1000000/rts.timeslice << "hz"                        << endl;
     if (rts.measureByTime)
         cout << "Occupation \% per slice:                " << rts.occupy                                   << "%"          << endl;
     cout << "Duration:                              "  << rts.runtime/1000/1000                        << " second(s)" << endl << endl;
