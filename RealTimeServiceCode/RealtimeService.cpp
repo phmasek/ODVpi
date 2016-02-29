@@ -77,8 +77,6 @@ void RealtimeService::nextTimeSlice() {
 
     }
     
-    cout << after.toNanoseconds()-before.toNanoseconds() << endl;
-
     if (verbose && !measureByTime) {
         cout << "Duration of 1 timeslice calculation: " << (after.toNanoseconds()-before.toNanoseconds()) << "us" << endl;
     } else if (verbose) {
