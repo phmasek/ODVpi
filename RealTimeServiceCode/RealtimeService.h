@@ -18,11 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <core/base/RealtimeService.h>
+#include <opendavinci/odcore/base/RealtimeService.h>
 
 
 // Realtime concurrency is provided by the class core::base::RealtimeService.
-class MyRealtimeService : public core::base::RealtimeService {
+class RealtimeService : public odcore::base::RealtimeService {
     public:
         enum {
             NANOSECOND  = 1,
@@ -55,7 +55,7 @@ class MyRealtimeService : public core::base::RealtimeService {
 
     // Functions used
     public:
-        MyRealtimeService(const uint32_t &periodInMicroseconds);
+        RealtimeService(const uint32_t &periodInMicroseconds);
 
         // Your class needs to implement the method void nextTimeSlice().
         virtual void nextTimeSlice();

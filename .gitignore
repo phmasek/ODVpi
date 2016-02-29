@@ -30,3 +30,7 @@ timetriggerexample
 *.out
 *.app
 >>>>>>> dfaa1dd27d64d13be5bb29f389af5c450ce37835
+
+OpenDaVINCI/
+worklog.txt
+VMachine.vdi

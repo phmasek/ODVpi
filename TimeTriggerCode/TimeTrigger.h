@@ -50,7 +50,9 @@ class TimeTrigger : public odcore::base::module::TimeTriggeredConferenceClientMo
         float piDigits;
         float piDuration;
         int piTimes;
-        odcore::data::TimeStamp timer;
+        int duration;
+        int * dataStorage;
+        odcore::data::TimeStamp bigTimer;
 
     // Flag Variables
     public:
@@ -103,6 +105,7 @@ class TimeTrigger : public odcore::base::module::TimeTriggeredConferenceClientMo
         virtual void setUp();
 
         virtual void tearDown();
+
 };
 
 

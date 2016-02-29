@@ -21,19 +21,19 @@
 #include <stdint.h>
 #include <sstream>
 #include <iostream>
-#include <core/base/Thread.h>
-#include "core/data/TimeStamp.h"
 
-#include "MyRealtimeService.hpp"
+#include <opendavinci/odcore/base/Thread.h>
+
+#include "RealtimeService.h"
 
 
 using namespace std;
 
-MyRealtimeService::MyRealtimeService(const uint32_t &periodInMilliseconds) :
-    core::base::RealtimeService((PERIOD) (periodInMilliseconds*MICROSECOND)) {}
+RealtimeService::RealtimeService(const uint32_t &periodInMilliseconds) :
+    odcore::base::RealtimeService((PERIOD) (periodInMilliseconds*MICROSECOND)) {}
 
 
-void MyRealtimeService::nextTimeSlice() {
+void RealtimeService::nextTimeSlice() {
 
     // Pi algorithm variable are
     // reset after each timeslice.
@@ -43,8 +43,8 @@ void MyRealtimeService::nextTimeSlice() {
     int j              = 3;
 
     // Initiate timers
-    core::data::TimeStamp before;
-    core::data::TimeStamp after;
+    odcore::data::TimeStamp before;
+    odcore::data::TimeStamp after;
     while (true) {
 
 
@@ -67,18 +67,20 @@ void MyRealtimeService::nextTimeSlice() {
         // Break if run more than specified
         // occupation % of timeslice.
         
-        after = core::data::TimeStamp();
+        after = odcore::data::TimeStamp();
         if (measureByTime &&
-            ((after.toMicroseconds()-before.toMicroseconds()) >= timeslice*MICROSECOND*((float)occupy/100))) {
+            ((after.toNanoseconds()-before.toNanoseconds()) >= timeslice*MICROSECOND*MICROSECOND*((float)occupy/100))) {
             break;
         }else if (!measureByTime && i >= piLimit) {
             break;
         }
 
     }
+    
+    cout << after.toNanoseconds()-before.toNanoseconds() << endl;
 
     if (verbose && !measureByTime) {
-        cout << "Duration of 1 timeslice calculation: " << (after.toMicroseconds()-before.toMicroseconds()) << "us" << endl;
+        cout << "Duration of 1 timeslice calculation: " << (after.toNanoseconds()-before.toNanoseconds()) << "us" << endl;
     } else if (verbose) {
         cout << "Pi calculations within timeslice: " << i-1 << endl;
     }
@@ -86,7 +88,7 @@ void MyRealtimeService::nextTimeSlice() {
     // Measure time used for calculating
     // pi, and how many timeslices were
     // run.
-    piDuration += (after.toMicroseconds()-before.toMicroseconds())/MICROSECOND;
+    piDuration += (after.toNanoseconds()-before.toNanoseconds())/MICROSECOND;
     piTimes++;
 
 }
@@ -95,7 +97,7 @@ void MyRealtimeService::nextTimeSlice() {
 int32_t main(int32_t argc, char **argv) {
     
 
-    int freq = MyRealtimeService::TIMESLICE;
+    int freq = RealtimeService::TIMESLICE;
     for (int args=0;args<argc;args++){
         if (string(argv[args])=="-f" || string(argv[args])=="--freq") {
             istringstream buffer(string(argv[args+1]));
@@ -106,7 +108,7 @@ int32_t main(int32_t argc, char **argv) {
 
     // Initiate the RT object with the
     // time of one timeslice [TIMESLICE].
-    MyRealtimeService rts((MyRealtimeService::PERIOD) freq);
+    RealtimeService rts((RealtimeService::PERIOD) freq);
 
     int timer = 1;
 
@@ -122,8 +124,8 @@ int32_t main(int32_t argc, char **argv) {
     rts.measureByTime   = true;
     rts.verbose         = false;
     rts.piLimit         = 1000;
-    rts.occupy          = MyRealtimeService::OCCUPY;
-    rts.runtime         = MyRealtimeService::RUNTIME;
+    rts.occupy          = RealtimeService::OCCUPY;
+    rts.runtime         = RealtimeService::RUNTIME;
 
     for (int args=0;args<argc;args++){
         if (string(argv[args])=="-p" || string(argv[args])=="--pi") {
@@ -155,7 +157,7 @@ int32_t main(int32_t argc, char **argv) {
     // for specified [RUNTIME] time 
     // until stopping.
     rts.start();
-    core::base::Thread::usleepFor(rts.runtime);
+    odcore::base::Thread::usleepFor(rts.runtime);
     rts.stop();
 
     
