@@ -113,7 +113,7 @@ int32_t main(int32_t argc, char **argv) {
     // Reset benchmark variables
     // within the RT object.
     rts.piDigits        = 0;
-    rts.piTimes         = 1;
+    rts.piTimes         = 0;
     rts.piDuration      = 0;
     rts.timeslice       = freq;
 
@@ -155,7 +155,13 @@ int32_t main(int32_t argc, char **argv) {
     // for specified [RUNTIME] time 
     // until stopping.
     rts.start();
-    odcore::base::Thread::usleepFor(rts.runtime);
+    while (true) {
+        // Run untill pi has been done
+        // freq x duration(seconds)
+        // Example: 10hz x 5sec = 50 iterations
+        if (rts.piTimes == 1000/rts.timeslice*(rts.runtime/1000/1000))
+            break;
+    }
     rts.stop();
 
     
