@@ -92,6 +92,32 @@ int writeToPort(const string msg, int PORT) {
     return spot;
 }
 
+void readFromPort(int PORT) {
+    int n = 0,
+        spot = 0;
+    char buf = '\0';
+
+    /* Whole response*/
+    char response[1024];
+    memset(response, '\0', sizeof response);
+
+    do {
+        n = read( PORT, &buf, 1 );
+        sprintf( &response[spot], "%c", buf );
+        spot += n;
+    } while( buf != '\r' && n > 0);
+
+    if (n < 0) {
+        std::cout << "Error reading: " << strerror(errno) << std::endl;
+    }
+    else if (n == 0) {
+        std::cout << "Read nothing!" << std::endl;
+    }
+    else {
+        std::cout << "Response: " << response << std::endl;
+    }
+}
+
 
 int32_t main(int32_t argc, char **argv) {
     int port = setUpSerialPort("/dev/ttyS0");
