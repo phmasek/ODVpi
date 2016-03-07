@@ -18,12 +18,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <sstream>
 #include <iostream>
 #include <cerrno>
 
+// WRITE TO FILE
+#include <fstream>
+// WRITE TO FILE END
+
 // SERIAL
 #include <termios.h>
-#include <unistd.h>
 #include <fcntl.h>    /* For O_RDWR */
 #include <unistd.h>   /* For open(), creat() */
 #include <cstring>
@@ -31,7 +35,7 @@
 
 using namespace std;
 
-int setUpSerialPort(const char* port_location) {
+int setUpSerialPort(const char* port_location, int32_t baud) {
 
     int PORT = open( port_location, O_RDWR| O_NOCTTY );
 
@@ -48,8 +52,8 @@ int setUpSerialPort(const char* port_location) {
     tty_old = tty;
 
     /* Set Baud Rate */
-    cfsetospeed (&tty, (speed_t)B9600);
-    cfsetispeed (&tty, (speed_t)B9600);
+    cfsetospeed (&tty, (speed_t)baud);
+    cfsetispeed (&tty, (speed_t)baud);
 
     /* Setting other Port Stuff */
     tty.c_cflag     &=  ~PARENB;            // Make 8n1
@@ -74,25 +78,7 @@ int setUpSerialPort(const char* port_location) {
     return PORT;
 }
 
-int writeToPort(const string msg, int PORT) {
-    unsigned char *val=new unsigned char[msg.length()+1];
-    strcpy((char *)val,msg.c_str());
-
-    int n_written = 0,
-        spot = 0;
-
-    do {
-        n_written = write( PORT, &val[spot], 1 );
-        spot += n_written;
-        if (spot == (int) msg.length()) {
-            write( PORT, "\r", 1 );
-        }
-    } while (spot < msg.length() && n_written > 0);
-
-    return spot;
-}
-
-void readFromPort(int PORT) {
+const char* readFromPort(int PORT) {
     int n = 0,
         spot = 0;
     char buf = '\0';
@@ -107,25 +93,73 @@ void readFromPort(int PORT) {
         spot += n;
     } while( buf != '\r' && n > 0);
 
+
     if (n < 0) {
         std::cout << "Error reading: " << strerror(errno) << std::endl;
-    }
-    else if (n == 0) {
+    } else if (n == 0) {
         std::cout << "Read nothing!" << std::endl;
+    } else {
+        stringstream ss;
+        ss << response;
+        return ss.str().c_str();
     }
-    else {
-        std::cout << "Response: " << response << std::endl;
-    }
+
+    return "";
 }
 
 
 int32_t main(int32_t argc, char **argv) {
-    int port = setUpSerialPort("/dev/ttyS0");
-    cout << port << endl;
 
-    while (true) {
-        cout << writeToPort("Hello", port) << endl;
-        usleep(1000000);
+    int32_t BAUD_RATE = B9600;
+    const char* device_location = NULL;
+    const char* baud = "9600";
+    const char* output_file_path = NULL;
+
+    for (int args=0;args<argc;args++){
+        if (string(argv[args])=="-b" || string(argv[args])=="--baud") {
+            baud = argv[args+1];
+            if (baud == "2400") {
+                BAUD_RATE = B2400;
+            } else if (baud == "4800") {
+                BAUD_RATE = B4800;
+            } else if (baud == "9600") {
+                BAUD_RATE = B9600;
+            } else if (baud == "19200") {
+                BAUD_RATE = B19200;
+            } else if (baud == "38400") {
+                BAUD_RATE = B38400;
+            }
+        } else if (string(argv[args])=="-d" || string(argv[args])=="--device") {
+            device_location = argv[args+1];
+        } else if (string(argv[args])=="-o" || string(argv[args])=="--output") {
+            output_file_path = argv[args+1];
+        }
     }
+
+    
+    int port = setUpSerialPort(device_location, BAUD_RATE);
+    if (!device_location || port < 0) {
+        return -1;
+    } else {
+        cout << "Listening to:\t\t" << device_location << endl;
+        cout << "Baud rate:\t\t" << baud << endl;
+        cout << "Writing to:\t\t" << (output_file_path ? output_file_path : "no output file") << endl;
+    }
+
+
+    ofstream output_file;
+    if (output_file_path) {
+        output_file.open(output_file_path);
+        while (true) {
+            output_file << readFromPort(port);
+        }  
+    } else {
+        while (true) {
+            cout << readFromPort(port) << endl;
+        }
+    }    
+
+    output_file.close();
+    return 0;
 
 }
