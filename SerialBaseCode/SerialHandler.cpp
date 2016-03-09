@@ -128,6 +128,8 @@ int32_t main(int32_t argc, char **argv) {
                 BAUD_RATE = B19200;
             } else if (baud == "38400") {
                 BAUD_RATE = B38400;
+            } else if (baud == "115200") {
+                BAUD_RATE = B115200;
             }
         } else if (string(argv[args])=="-d" || string(argv[args])=="--device") {
             device_location = argv[args+1];
