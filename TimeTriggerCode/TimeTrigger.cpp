@@ -63,6 +63,7 @@ void TimeTrigger::setUp() {
     bigTimer = odcore::data::TimeStamp();
 
     odcore::data::TimeStamp::setupSerial("/dev/ttyS0", 115200);
+    odcore::data::TimeStamp::writeMessageToSerial("start");
 
     // Print out info before starting
     // execution of timeslices.
@@ -74,6 +75,7 @@ void TimeTrigger::setUp() {
 }
 
 void TimeTrigger::tearDown() {
+    odcore::data::TimeStamp::writeMessageToSerial("end");
     // Print out results from run
     const char* measured = (measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
     cout << endl << endl;;
