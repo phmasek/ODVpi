@@ -6,4 +6,4 @@
 
 git add data
 git commit -m "Updated data while capturing"
-git push origin data
+git push origin rpi
