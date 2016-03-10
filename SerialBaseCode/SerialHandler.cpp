@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <csignal>
 #include <sstream>
 #include <iostream>
 #include <cerrno>
@@ -35,9 +36,11 @@
 
 using namespace std;
 
+timespec start, end;
+
 int setUpSerialPort(const char* port_location, int32_t baud) {
 
-    int PORT = open( port_location, O_RDWR| O_NOCTTY );
+    int PORT = open( port_location, O_RDWR| O_NOCTTY| O_NONBLOCK );
 
     struct termios tty;
     struct termios tty_old;
@@ -52,8 +55,8 @@ int setUpSerialPort(const char* port_location, int32_t baud) {
     tty_old = tty;
 
     /* Set Baud Rate */
-    cfsetospeed (&tty, (speed_t)baud);
-    cfsetispeed (&tty, (speed_t)baud);
+    cfsetospeed (&tty, (speed_t)B115200);
+    cfsetispeed (&tty, (speed_t)B115200);
 
     /* Setting other Port Stuff */
     tty.c_cflag     &=  ~PARENB;            // Make 8n1
@@ -65,6 +68,8 @@ int setUpSerialPort(const char* port_location, int32_t baud) {
     tty.c_cc[VMIN]   =  1;                  // read doesn't block
     tty.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
     tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
+
+//    fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
 
     /* Make raw */
     cfmakeraw(&tty);
@@ -86,19 +91,22 @@ const char* readFromPort(int PORT) {
     /* Whole response*/
     char response[1024];
     memset(response, '\0', sizeof response);
+    int i = 0;
 
     do {
         n = read( PORT, &buf, 1 );
         sprintf( &response[spot], "%c", buf );
         spot += n;
-    } while( buf != '\r' && n > 0);
+        clock_gettime(CLOCK_REALTIME, &end);
+    } while( buf != '\r' && n > 0 );
 
 
     if (n < 0) {
-        std::cout << "Error reading: " << strerror(errno) << std::endl;
+        //std::cout << "Error reading: " << strerror(errno) << std::endl;
     } else if (n == 0) {
-        std::cout << "Read nothing!" << std::endl;
+        //std::cout << "Read nothing!" << std::endl;
     } else {
+        clock_gettime(CLOCK_REALTIME, &start);
         stringstream ss;
         ss << response;
         return ss.str().c_str();
@@ -106,7 +114,6 @@ const char* readFromPort(int PORT) {
 
     return "";
 }
-
 
 int32_t main(int32_t argc, char **argv) {
 
@@ -148,12 +155,17 @@ int32_t main(int32_t argc, char **argv) {
         cout << "Writing to:\t\t" << (output_file_path ? output_file_path : "no output file") << endl;
     }
 
-
+    int i = 0;
     ofstream output_file;
+    clock_gettime(CLOCK_REALTIME, &start);
+
     if (output_file_path) {
         output_file.open(output_file_path);
         while (true) {
-            output_file << readFromPort(port);
+	    const char* msg = readFromPort(port);
+            output_file << msg;
+	    if (end.tv_sec-start.tv_sec>=5)
+		break;
         }  
     } else {
         while (true) {
