@@ -39,6 +39,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <sys/utsname.h>
 
 #include "TimeTrigger.h"
 
@@ -63,7 +64,13 @@ void TimeTrigger::setUp() {
     bigTimer = odcore::data::TimeStamp();
 
     odcore::data::TimeStamp::setupSerial("/dev/ttyS0", 115200);
-    odcore::data::TimeStamp::writeMessageToSerial("start");
+
+
+    struct utsname sysinfo;
+    uname(&sysinfo);
+
+    const string msg =  string(sysinfo.release) + " " + string(sysinfo.version) + "\r\n";
+    odcore::data::TimeStamp::writeMessageToSerial(msg);
 
     // Print out info before starting
     // execution of timeslices.
@@ -75,7 +82,7 @@ void TimeTrigger::setUp() {
 }
 
 void TimeTrigger::tearDown() {
-    odcore::data::TimeStamp::writeMessageToSerial("end");
+    odcore::data::TimeStamp::writeMessageToSerial("end\r\n");
     // Print out results from run
     const char* measured = (measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
     cout << endl << endl;;

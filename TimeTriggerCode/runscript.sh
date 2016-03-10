@@ -38,11 +38,9 @@ if [ -z "${f}" ] || [ -z "${i}" ] || [ -z "${o}" ]; then
     usage
 fi
 
-FILENAME=$(date +"%Y%m%d#%T")
-[ ! -d ./data ] && mkdir -p ./data
-echo "Duration" >> "./data/$FILENAME-${f}hz${o}.csv";
 for ((x=1;x<=$i;x++))
 do
-	./timetrigger --cid=111 --freq=${f} --duration 60 --occupy ${o} --verbose 3 >> "./data/$FILENAME-${f}hz${o}.csv" ;
+	./timetrigger --cid=111 --freq=${f} --duration 10 --occupy ${o} --realtime=49;
 	echo "${x} iteration(s) done";
+	sleep 60;
 done
