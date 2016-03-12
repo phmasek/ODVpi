@@ -36,11 +36,10 @@
 
 using namespace std;
 
-timespec start, end;
 
-int setUpSerialPort(const char* port_location, int32_t baud) {
+int setUpSerialPort(const char* port_location) {
 
-    int PORT = open( port_location, O_RDWR| O_NOCTTY| O_NONBLOCK );
+    int PORT = open( port_location, O_RDWR| O_NOCTTY );
 
     struct termios tty;
     struct termios tty_old;
@@ -69,7 +68,6 @@ int setUpSerialPort(const char* port_location, int32_t baud) {
     tty.c_cc[VTIME]  =  5;                  // 0.5 seconds read timeout
     tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
 
-//    fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
 
     /* Make raw */
     cfmakeraw(&tty);
@@ -89,7 +87,7 @@ const char* readFromPort(int PORT) {
     char buf = '\0';
 
     /* Whole response*/
-    char response[1024];
+    char response[64];
     memset(response, '\0', sizeof response);
     int i = 0;
 
@@ -97,16 +95,12 @@ const char* readFromPort(int PORT) {
         n = read( PORT, &buf, 1 );
         sprintf( &response[spot], "%c", buf );
         spot += n;
-        clock_gettime(CLOCK_REALTIME, &end);
     } while( buf != '\r' && n > 0 );
 
 
     if (n < 0) {
-        //std::cout << "Error reading: " << strerror(errno) << std::endl;
     } else if (n == 0) {
-        //std::cout << "Read nothing!" << std::endl;
     } else {
-        clock_gettime(CLOCK_REALTIME, &start);
         stringstream ss;
         ss << response;
         return ss.str().c_str();
@@ -117,63 +111,45 @@ const char* readFromPort(int PORT) {
 
 int32_t main(int32_t argc, char **argv) {
 
-    int32_t BAUD_RATE = B9600;
     const char* device_location = NULL;
-    const char* baud = "9600";
     const char* output_file_path = NULL;
 
     for (int args=0;args<argc;args++){
-        if (string(argv[args])=="-b" || string(argv[args])=="--baud") {
-            baud = argv[args+1];
-            if (baud == "2400") {
-                BAUD_RATE = B2400;
-            } else if (baud == "4800") {
-                BAUD_RATE = B4800;
-            } else if (baud == "9600") {
-                BAUD_RATE = B9600;
-            } else if (baud == "19200") {
-                BAUD_RATE = B19200;
-            } else if (baud == "38400") {
-                BAUD_RATE = B38400;
-            } else if (baud == "115200") {
-                BAUD_RATE = B115200;
-            }
-        } else if (string(argv[args])=="-d" || string(argv[args])=="--device") {
+        if (string(argv[args])=="-d" || string(argv[args])=="--device") {
             device_location = argv[args+1];
         } else if (string(argv[args])=="-o" || string(argv[args])=="--output") {
             output_file_path = argv[args+1];
         }
     }
 
-    
-    int port = setUpSerialPort(device_location, BAUD_RATE);
-    if (!device_location || port < 0) {
-        return -1;
-    } else {
-        cout << "Listening to:\t\t" << device_location << endl;
-        cout << "Baud rate:\t\t" << baud << endl;
-        cout << "Writing to:\t\t" << (output_file_path ? output_file_path : "no output file") << endl;
-    }
-
-    int i = 0;
+    int port = setUpSerialPort(device_location);
     ofstream output_file;
-    clock_gettime(CLOCK_REALTIME, &start);
 
+    int in = 0;
+    timespec end, start;
+    clock_gettime(CLOCK_MONOTONIC, &start);
     if (output_file_path) {
         output_file.open(output_file_path);
         while (true) {
-	    const char* msg = readFromPort(port);
+            const char* msg = readFromPort(port);
             output_file << msg;
-	    if (end.tv_sec-start.tv_sec>=5)
-		break;
+            in++;
+            if (std::strstr(msg, "end") != NULL) {
+                output_file.close();
+                break;
+            }
         }  
     } else {
         while (true) {
-            cout << readFromPort(port) << endl;
+            readFromPort(port);
+            in++;
+            if (in == 12000)
+                break;
         }
-    }    
+    }
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    cout << in << " Start: " << start.tv_sec << " End: " << end.tv_sec << " Duration: " << end.tv_sec-start.tv_sec << endl;
 
-    output_file.close();
     return 0;
 
 }
