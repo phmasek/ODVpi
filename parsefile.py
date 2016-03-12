@@ -1,4 +1,11 @@
 #!/usr/bin/python
+#
+# Author: Philip Masek
+#
+# Usage: python parsefile.py -i [input file]
+# Description: Parses data derived from the project ODVpi
+# Url: https://www.github.com/Pletron/ODVpi
+#
 
 import sys, getopt, os
 
@@ -27,14 +34,24 @@ def main(argv):
 	if not os.path.exists('./parsed'):
 		os.makedirs('./parsed')
 
-	outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(inputfile)))[0], 'w+')
+
+	if os.path.exists('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(inputfile)))[0][2:]):
+		outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(inputfile)))[0][2:], 'a')
+	else:
+		outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(inputfile)))[0][2:], 'w+')
+		outputfile.write("measurement_1;measurement_2;measurement_3;measurement_4;timeslice\n")
+	
+
 	f = open(inputfile)
 	lines = f.readlines()
-	outputfile.write("measurement_1;measurement_2;measurement_3;measurement_4;timeslice\n")
+
+	
+		
+
 	for i,line in enumerate(lines):
 		index = line.split(';')[0]
 		
-		if index is "4":
+		if index is "4" and i > 4:
 			try:
 				first = int(lines[i-3].split(';')[1][6:])-int(lines[i-4].split(';')[1][6:])
 				second = int(lines[i-2].split(';')[1][6:])-int(lines[i-3].split(';')[1][6:])
