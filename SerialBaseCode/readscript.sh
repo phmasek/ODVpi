@@ -39,11 +39,11 @@ FILENAME=${o}
 [ ! -d ./data/$FILENAME ] && mkdir -p ./data/$FILENAME
 for ((x=1;x<=$i;x++))
 do
-	grabserial -d "/dev/ttyUSB0" -b 115200 -w 8 -p N -s 1 -o ./data/$FILENAME/${x}-${FILENAME}.log  --quitpat=end
+	./serial -d "/dev/ttyUSB0" -o ./data/$FILENAME/${x}-${FILENAME}.log
 
 	screen -d -m ./commit_data.sh 
 
-        echo "${x} iteration(s) done";
+    echo "${x} iteration(s) done";
 done
 
 
