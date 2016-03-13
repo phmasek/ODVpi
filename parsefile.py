@@ -9,44 +9,9 @@
 
 import sys, getopt, os
 
-def main(argv):
 
-	inputfile = ''
-	try:
-		opts, args = getopt.getopt(argv,"hi:",["ifile="])
-	except getopt.GetoptError:
-		print 'parsefile.py -i <inputfile>'
-		sys.exit(2)
-	for opt, arg in opts:
-		if opt == '-h':
-			print 'parsefile.py -i <inputfile>'
-			sys.exit()
-		elif opt in ("-i", "--ifile"):
-			inputfile = arg
-	
-	if inputfile is '':
-		print "No input file defined"
-		sys.exit()
-	else:
-		print 'Parsing file: "', inputfile
-
-
-	if not os.path.exists('./parsed'):
-		os.makedirs('./parsed')
-
-
-	if os.path.exists('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(inputfile)))[0][2:]):
-		outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(inputfile)))[0][2:], 'a')
-	else:
-		outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(inputfile)))[0][2:], 'w+')
-		outputfile.write("measurement_1;measurement_2;measurement_3;measurement_4;timeslice\n")
-	
-
-	f = open(inputfile)
-	lines = f.readlines()
-
-	
-		
+def parse_data_file(inputfile, outputfile):
+	lines = inputfile.readlines()
 
 	for i,line in enumerate(lines):
 		index = line.split(';')[0]
@@ -69,7 +34,60 @@ def main(argv):
 			except ValueError:
 				print "Failed to subtract"
 
-	f.close()
+	print "Parsed and saved data from %s" % os.path.basename(inputfile.name)
+
+
+def main(argv):
+
+	inputfile = ''
+	try:
+		opts, args = getopt.getopt(argv,"hi:",["inputfile="])
+	except getopt.GetoptError:
+		print 'parsefile.py -i <input (file or folder)>'
+		sys.exit(2)
+	for opt, arg in opts:
+		if opt == '-h':
+			print 'parsefile.py -i <input>'
+			sys.exit()
+		elif opt in ("-i", "--input"):
+			inputfile = arg
+	
+
+
+	if inputfile is '':
+		print "No input file or folder defined"
+		sys.exit()
+	else:
+		print 'Parsing %s: "' % 'file' if os.path.isfile(inputfile) else 'folder', inputfile
+
+
+	files = []
+	if os.path.isdir(inputfile):
+		for file in os.listdir(inputfile):
+			files.append(os.path.join(inputfile, file))
+	elif os.path.isfile(inputfile):
+		files.append(inputfile)
+	else:
+		print "File does not exist"
+		sys.exit()
+
+
+	if not os.path.exists('./parsed'):
+		os.makedirs('./parsed')
+
+
+	if os.path.exists('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(files[0])))[0][2:]):
+		outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(files[0])))[0][2:], 'a')
+	else:
+		outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(files[0])))[0][2:], 'w+')
+		outputfile.write("measurement_1;measurement_2;measurement_3;measurement_4;timeslice\n")
+	
+
+	for filepath in files:
+		f = open(filepath)
+		parse_data_file(f,outputfile)
+		f.close()
+	
 	outputfile.close()
 
 
