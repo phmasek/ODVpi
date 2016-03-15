@@ -39,7 +39,12 @@ FILENAME=${o}
 [ ! -d ./data/$FILENAME ] && mkdir -p ./data/$FILENAME
 for ((x=1;x<=$i;x++))
 do
-	./serial -d "/dev/ttyUSB0" -o ./data/$FILENAME/${x}-${FILENAME}.log
+	if [ ${x} -lt 10 ]; then
+		./serial -d "/dev/ttyUSB0" -o ./data/$FILENAME/0${x}-${FILENAME}.log
+	else
+		./serial -d "/dev/ttyUSB0" -o ./data/$FILENAME/${x}-${FILENAME}.log
+	fi
+
 
 	screen -d -m ./commit_data.sh 
 
