@@ -2,7 +2,7 @@
 #
 # Author: Philip Masek
 #
-# Usage: python parsefile.py -i [input file]
+# Usage: python parsefile.py -i [input file/folder]
 # Description: Parses data derived from the project ODVpi
 # Url: https://www.github.com/Pletron/ODVpi
 #
@@ -16,12 +16,12 @@ def parse_data_file(inputfile, outputfile):
 	for i,line in enumerate(lines):
 		index = line.split(';')[0]
 		
-		if index is "4" and i > 4:
+		if index is "4" and i > 8:
 			try:
-				first = int(lines[i-3].split(';')[1][6:])-int(lines[i-4].split(';')[1][6:])
-				second = int(lines[i-2].split(';')[1][6:])-int(lines[i-3].split(';')[1][6:])
-				third = int(lines[i-1].split(';')[1][6:])-int(lines[i-2].split(';')[1][6:])
-				fourth = int(lines[i].split(';')[1][6:])-int(lines[i-1].split(';')[1][6:])
+				first = int(lines[i-3].split(';')[1])-int(lines[i-4].split(';')[1])
+				second = int(lines[i-2].split(';')[1])-int(lines[i-3].split(';')[1])
+				third = int(lines[i-1].split(';')[1])-int(lines[i-2].split(';')[1])
+				fourth = int(lines[i].split(';')[1])-int(lines[i-1].split(';')[1])
 
 				sliceTime = first+second+third+fourth
 
@@ -58,7 +58,7 @@ def main(argv):
 		print "No input file or folder defined"
 		sys.exit()
 	else:
-		print 'Parsing %s: "' % 'file' if os.path.isfile(inputfile) else 'folder', inputfile
+		print '\nParsing %s: \n' % 'file' if os.path.isfile(inputfile) else 'folder', inputfile
 
 
 	files = []
@@ -76,12 +76,12 @@ def main(argv):
 		os.makedirs('./parsed')
 
 
-	if os.path.exists('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(files[0])))[0][2:]):
-		outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(files[0])))[0][2:], 'a')
+	if os.path.exists('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(files[0])))[0][3:]):
+		outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(files[0])))[0][3:], 'a')
 	else:
-		outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(files[0])))[0][2:], 'w+')
-		outputfile.write("measurement_1;measurement_2;measurement_3;measurement_4;timeslice\n")
-	
+		outputfile = open('./parsed/%s-parsed.log' % (os.path.splitext(os.path.basename(files[0])))[0][3:], 'w+')
+		outputfile.write("sleep;odv_oh1;pi_calc;odv_oh2;total_timeslice\n")
+
 
 	for filepath in files:
 		f = open(filepath)
