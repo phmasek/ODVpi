@@ -89,7 +89,7 @@ void TimeTrigger::setUp() {
     const uint32_t ID = 0;
     const uint32_t WIDTH = 1280;
     const uint32_t HEIGHT = 720;
-    const uint32_t BPP = 24;
+    const uint32_t BPP = 3;
 
     m_camera = unique_ptr<Camera>(new OpenCVCamera(NAME, ID, WIDTH, HEIGHT, BPP));
 
