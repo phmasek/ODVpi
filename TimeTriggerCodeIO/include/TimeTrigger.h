@@ -37,8 +37,9 @@
 #include "opencv2/imgproc/imgproc_c.h"
 #include "opencv2/imgproc/imgproc.hpp"
 
-#include "camera/opencvdevice.hpp"
-#include <opendavinci/odtools/recorder/Recorder.h>
+#include "opendavinci/odtools/recorder/Recorder.h"
+#include "Camera.h"
+
 
 class TimeTrigger : public odcore::base::module::TimeTriggeredConferenceClientModule {
     public:
@@ -96,18 +97,11 @@ class TimeTrigger : public odcore::base::module::TimeTriggeredConferenceClientMo
          * @return Reference to this instance.
          */
         TimeTrigger& operator=(const TimeTrigger &/*obj*/);
-        std::shared_ptr<cv::VideoCapture> m_capture;
-        std::shared_ptr<cv::Mat> m_image;
+        
 
-
-        bool CopyImageTo(char *, uint32_t const &);
-        bool CaptureFrame();
-
-        uint32_t m_size;
-
-        odcore::data::image::SharedImage m_sharedImage;
-        std::shared_ptr<odcore::wrapper::SharedMemory> m_sharedMemory;
         std::unique_ptr<odtools::recorder::Recorder> m_recorder;
+        std::unique_ptr<Camera> m_camera;
+        void distribute(odcore::data::Container c);
 
 
     public:

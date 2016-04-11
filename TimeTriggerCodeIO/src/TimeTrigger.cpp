@@ -44,9 +44,8 @@
 #include "opendavinci/odcore/data/Container.h"
 #include "opendavinci/odcore/data/TimeStamp.h"
 
-#include "opendavinci/odcore/base/Lock.h"
-#include "opendavinci/odcore/wrapper/SharedMemoryFactory.h"
-#include <opendavinci/odtools/recorder/Recorder.h>
+
+#include "../include/OpenCVCamera.h"
 
 #include "../include/TimeTrigger.h"
 
@@ -58,9 +57,9 @@ using namespace odtools::recorder;
 using namespace odcore::base::module;
 
 TimeTrigger::TimeTrigger(const int32_t &argc, char **argv) :
-    TimeTriggeredConferenceClientModule(argc, argv, "TimeTrigger")
-    , m_capture(nullptr)
-    , m_image(new cv::Mat)
+    TimeTriggeredConferenceClientModule(argc, argv, "TimeTrigger"),
+    m_recorder(),
+    m_camera()
     {}
 
 TimeTrigger::~TimeTrigger() {}
@@ -68,39 +67,34 @@ TimeTrigger::~TimeTrigger() {}
 void TimeTrigger::setUp() {
 
 
-    // URL for storing containers containing GenericCANMessages.
-    stringstream recordingUrl;
-    recordingUrl << "file://" << "recorded_data" << ".rec";
-    // Size of memory segments (not needed for recording GenericCANMessages).
-    const uint32_t MEMORY_SEGMENT_SIZE = 0;
-    // Number of memory segments (not needed for recording
-    // GenericCANMessages).
-    const uint32_t NUMBER_OF_SEGMENTS = 0;
-    // Run recorder in asynchronous mode to allow real-time recording in
-    // background.
+    // SETUP RECORDER
+    stringstream recordingURL;
+    recordingURL << "file://data/" << "proxy" << ".rec";
+    // Size of memory segments.
+    const uint32_t MEMORY_SEGMENT_SIZE = 2800000;
+    // Number of memory segments.
+    const uint32_t NUMBER_OF_SEGMENTS = 20;
+    // Run recorder in asynchronous mode to allow real-time recording in background.
     const bool THREADING = false;
-    // Dump shared images and shared data (not needed for recording
-    // mapped containers)?
+    // Dump shared images and shared data?
     const bool DUMP_SHARED_DATA = true;
 
-    // Create a recorder instance.
-    m_recorder = unique_ptr<Recorder>(new Recorder(recordingUrl.str(),
-    MEMORY_SEGMENT_SIZE, NUMBER_OF_SEGMENTS, THREADING, DUMP_SHARED_DATA));
+    m_recorder = unique_ptr<Recorder>(new Recorder(recordingURL.str(), MEMORY_SEGMENT_SIZE, NUMBER_OF_SEGMENTS, THREADING, DUMP_SHARED_DATA));
+    
 
+    // Create the camera grabber.
+    const string NAME = "usbcam";
+    string TYPE = "webcam";
+    std::transform(TYPE.begin(), TYPE.end(), TYPE.begin(), ::tolower);
+    const uint32_t ID = 0;
+    const uint32_t WIDTH = 1280;
+    const uint32_t HEIGHT = 720;
+    const uint32_t BPP = 24;
 
+    m_camera = unique_ptr<Camera>(new OpenCVCamera(NAME, ID, WIDTH, HEIGHT, BPP));
 
-    m_size = (1280*720*24);
-    m_sharedMemory = odcore::wrapper::SharedMemoryFactory::createSharedMemory("camera", m_size);
-    m_sharedImage.setName("camera");
-    m_sharedImage.setWidth(1280);
-    m_sharedImage.setHeight(720);
-    m_sharedImage.setBytesPerPixel(24);
-    m_sharedImage.setSize(m_size);
-
-    m_capture.reset(new cv::VideoCapture(0));
-
-    if (!m_capture->isOpened()) {
-        std::cerr << "[proxy-camera] Could not open camera '" << std::endl;
+    if (m_camera.get() == NULL) {
+        cerr << "No valid camera type defined." << endl;
     }
 
 
@@ -140,15 +134,12 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
         odcore::data::TimeStamp::writeNanoToSerial("2");
         odcore::data::TimeStamp start, end;
 
-        if (CaptureFrame()) {
-            if (m_sharedMemory.get() && m_sharedMemory->isValid()) {
-                odcore::base::Lock l(m_sharedMemory);
-                cout << CopyImageTo(static_cast<char *>(m_sharedMemory->getSharedMemory()), m_size) << endl;
-            }
+        if (m_camera.get() != NULL) {
+            odcore::data::image::SharedImage si = m_camera->capture();
+            odcore::data::Container c(si);
+            distribute(c);
         }
 
-        odcore::data::Container c(m_sharedImage);
-        m_recorder->store(c);
 
 
         // Pi algorithm variable are
@@ -189,35 +180,18 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
 }
 
 
-
-
-
-
-
-bool TimeTrigger::CaptureFrame() {
-    bool retVal = false;
-    if (m_capture != nullptr) {
-        if (m_capture->read(*m_image)) {
-            retVal = true;
-        }
-    }
-    return retVal;
-}
-
-bool TimeTrigger::CopyImageTo(char *a_destination, const uint32_t &a_size) {
-    bool retVal = false;
-
-    if ((a_destination != nullptr) && (a_size > 0) && (m_image != nullptr)) {
-        ::memcpy(a_destination, m_image->data, a_size);
-
-           // cv::imshow("Window title", *m_image);
-           // cv::waitKey(10);
-
-        retVal = true;
+void TimeTrigger::distribute(odcore::data::Container c) {
+    // Store data to recorder.
+    if (m_recorder.get() != NULL) {
+        // Time stamp data before storing.
+        c.setReceivedTimeStamp(odcore::data::TimeStamp());
+        m_recorder->store(c);
     }
 
-    return retVal;
+    // Share data.
+    getConference().send(c);
 }
+
 
 
 
