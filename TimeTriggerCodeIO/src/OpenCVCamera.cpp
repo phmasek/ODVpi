@@ -67,8 +67,8 @@ bool OpenCVCamera::copyImageTo(char *dest, const uint32_t &size) {
     if ( (dest != NULL) && (size > 0) && (m_image != NULL) ) {
         ::memcpy(dest, &m_image->data, size);
 
-        cv::imshow("Window title", *m_image);
-        cv::waitKey(10);
+        // cv::imshow("Window title", *m_image);
+        // cv::waitKey(10);
 
         retVal = true;
     }
