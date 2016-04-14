@@ -136,8 +136,10 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
 
         if (m_camera.get() != NULL) {
             odcore::data::image::SharedImage si = m_camera->capture();
+            odcore::data::TimeStamp::writeNanoToSerial("3");
             odcore::data::Container c(si);
             distribute(c);
+            odcore::data::TimeStamp::writeNanoToSerial("4");
         }
 
 
@@ -172,7 +174,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
         // Add to the timeslice counter
         piTimes++;
 
-        odcore::data::TimeStamp::writeNanoToSerial("3");
+        odcore::data::TimeStamp::writeNanoToSerial("5");
         if (piTimes==duration)
             return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
     }
