@@ -40,7 +40,7 @@ fi
 
 for ((x=1;x<=$i;x++))
 do
-	./timetrigger --cid=111 --freq=${f} --duration 10 --occupy ${o} --realtime=49;
+	./timetrigger --cid=111 --freq=${f} --duration 3600 --occupy ${o} --realtime=49;
 	echo "${x} iteration(s) done";
 	sleep 60;
 done
