@@ -29,7 +29,10 @@
  *     
  */
 
+
 #include <opendavinci/odcore/base/module/TimeTriggeredConferenceClientModule.h>
+
+
 
 class TimeTrigger : public odcore::base::module::TimeTriggeredConferenceClientModule {
     public:
@@ -87,6 +90,8 @@ class TimeTrigger : public odcore::base::module::TimeTriggeredConferenceClientMo
          * @return Reference to this instance.
          */
         TimeTrigger& operator=(const TimeTrigger &/*obj*/);
+        
+
 
     public:
         /**

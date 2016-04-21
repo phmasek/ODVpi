@@ -39,11 +39,15 @@
 
 #include <iostream>
 #include <iomanip>
-#include <sys/utsname.h>
 
-#include "TimeTrigger.h"
+
+#include "opendavinci/odcore/data/TimeStamp.h"
+
+#include "../include/TimeTrigger.h"
+
 
 using namespace std;
+using namespace odtools::recorder;
 
 // We add some of OpenDaVINCI's namespaces for the sake of readability.
 using namespace odcore::base::module;
@@ -57,6 +61,7 @@ TimeTrigger::~TimeTrigger() {}
 void TimeTrigger::setUp() {
     // Reset benchmark variables
     // within the RT object.
+
     piTimes   = 0;
     duration *= getFrequency();
     occupy = ((1000/getFrequency())*(occupy/100))*1000*1000;
@@ -64,13 +69,6 @@ void TimeTrigger::setUp() {
     bigTimer = odcore::data::TimeStamp();
 
     odcore::data::TimeStamp::setupSerial("/dev/ttyS0", 115200);
-
-
-    struct utsname sysinfo;
-    uname(&sysinfo);
-
-    const string msg =  string(sysinfo.release) + " " + string(sysinfo.version) + "\r\n";
-    odcore::data::TimeStamp::writeMessageToSerial(msg);
 
     // Print out info before starting
     // execution of timeslices.
@@ -82,7 +80,6 @@ void TimeTrigger::setUp() {
 }
 
 void TimeTrigger::tearDown() {
-    odcore::data::TimeStamp::writeMessageToSerial("end\r\n");
     // Print out results from run
     const char* measured = (measureByTime ? "Occupied " : "Limited pi decimals per slice to ");
     cout << endl << endl;;
@@ -96,6 +93,7 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
     while (getModuleStateAndWaitForRemainingTimeInTimeslice() == odcore::data::dmcp::ModuleStateMessage::RUNNING) {
         odcore::data::TimeStamp::writeNanoToSerial("2");
         odcore::data::TimeStamp start, end;
+
         // Pi algorithm variable are
         // reset after each timeslice.
         long double tempPi;
@@ -132,6 +130,10 @@ odcore::data::dmcp::ModuleExitCodeMessage::ModuleExitCode TimeTrigger::body() {
     }
     return odcore::data::dmcp::ModuleExitCodeMessage::OKAY;
 }
+
+
+
+
 
 int32_t main(int32_t argc, char **argv) {
     TimeTrigger tte(argc, argv);
