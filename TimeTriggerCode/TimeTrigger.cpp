@@ -43,7 +43,7 @@
 
 #include "opendavinci/odcore/data/TimeStamp.h"
 
-#include "../include/TimeTrigger.h"
+#include "TimeTrigger.h"
 
 
 using namespace std;
